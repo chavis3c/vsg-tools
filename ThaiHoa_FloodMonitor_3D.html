@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Thai Hoa IP — Flood Monitor 3D</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#060c18; font-family:'Courier New',monospace; overflow:hidden; }
+canvas { display:block; }
+#hud { position:absolute; top:14px; left:16px; pointer-events:none; }
+#hud h1 { font-size:20px; font-weight:bold; letter-spacing:4px; color:#00ffe0; text-shadow:0 0 20px #00ffe0aa; margin-bottom:2px; }
+#hud .sub { font-size:10px; color:#4ecdc477; letter-spacing:2px; }
+#stats { position:absolute; top:14px; right:16px; color:#4ecdc4; font-size:10px; text-align:right; pointer-events:none; line-height:2; }
+#stats span { color:#00ffe0; }
+#flood-panel {
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+  background:rgba(4,10,26,0.93); border:1px solid #0066ff66;
+  border-radius:12px; padding:14px 26px 12px; min-width:400px;
+  box-shadow:0 0 30px #0044ff22; user-select:none;
+}
+.fp-title { font-size:10px; letter-spacing:3px; color:#4488ff; text-align:center; margin-bottom:8px; }
+#flood-display { font-size:28px; font-weight:bold; color:#00aaff; text-align:center; text-shadow:0 0 14px #0088ffaa; margin-bottom:6px; letter-spacing:2px; }
+#flood-display .unit { font-size:13px; color:#4488ff88; }
+#flood-slider { width:100%; height:7px; -webkit-appearance:none; appearance:none; background:linear-gradient(to right,#1a3aff,#0088ff,#00ccff); border-radius:4px; outline:none; cursor:pointer; margin-bottom:8px; }
+#flood-slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#00aaff; border:3px solid #ffffff44; box-shadow:0 0 8px #00aaffaa; cursor:pointer; }
+.fp-row { display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#4488ff88; letter-spacing:1px; }
+#flood-badge { font-size:12px; font-weight:bold; padding:3px 12px; border-radius:16px; background:rgba(0,50,200,0.3); border:1px solid #0066ff66; color:#fff; letter-spacing:1px; }
+#flood-badge.danger { background:rgba(200,0,0,0.35); border-color:#ff333366; color:#ff9988; }
+#flooded-tags { position:absolute; bottom:110px; left:50%; transform:translateX(-50%); display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:700px; pointer-events:none; }
+.ftag { font-size:10px; font-weight:bold; padding:2px 8px; border-radius:8px; background:rgba(200,30,0,0.8); border:1px solid #ff4433; color:#ffccaa; letter-spacing:1px; }
+#legend { position:absolute; bottom:150px; left:16px; pointer-events:none; }
+.leg-t { font-size:9px; color:#4ecdc4; letter-spacing:2px; margin-bottom:5px; }
+.leg-row { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+.leg-box { width:14px; height:10px; border-radius:2px; }
+.leg-lbl { font-size:9px; color:#aaccbb; letter-spacing:1px; }
+#tooltip { position:absolute; display:none; background:rgba(2,10,22,0.95); border:1px solid #00ffe055; border-radius:8px; padding:8px 12px; pointer-events:none; min-width:190px; }
+#tooltip .tn { font-size:14px; font-weight:bold; color:#00ffe0; margin-bottom:3px; }
+#tooltip .tt { font-size:11px; color:#aaffee; line-height:1.6; }
+#tooltip .tf { font-size:10px; margin-top:3px; }
+#controls { position:absolute; bottom:18px; right:16px; color:#4ecdc455; font-size:9px; text-align:right; pointer-events:none; line-height:2; letter-spacing:1px; }
+</style>
+</head>
+<body>
+<div id="hud"><h1>⬡ THAI HOA IP</h1><div class="sub">FLOOD MONITOR · 167 LOTS · ZONE A+B</div></div>
+<div id="stats">ZONE A: <span>73 lots</span><br>ZONE B: <span>94 lots</span><br>ALT RANGE: <span>1.06m–2.58m</span></div>
+<div id="legend">
+  <div class="leg-t">LOT STATUS</div>
+  <div class="leg-row"><div class="leg-box" style="background:#00cc88"></div><span class="leg-lbl">ZONE A — SAFE</span></div>
+  <div class="leg-row"><div class="leg-box" style="background:#3366ff"></div><span class="leg-lbl">ZONE B — SAFE</span></div>
+  <div class="leg-row"><div class="leg-box" style="background:#ff3300"></div><span class="leg-lbl">FLOODED ⚠</span></div>
+  <div class="leg-row"><div class="leg-box" style="background:#ffaa00"></div><span class="leg-lbl">AT RISK (±0.1m)</span></div>
+  <div class="leg-row"><div class="leg-box" style="background:rgba(0,80,220,0.5)"></div><span class="leg-lbl">FLOOD WATER</span></div>
+</div>
+<div id="flooded-tags"></div>
+<div id="flood-panel">
+  <div class="fp-title">🌊 FLOOD WATER LEVEL SIMULATION</div>
+  <div id="flood-display">1.06 <span class="unit">m</span></div>
+  <input type="range" id="flood-slider" min="106" max="260" value="106" step="1">
+  <div class="fp-row">
+    <span>MIN 1.06m</span>
+    <div id="flood-badge">0 lots flooded</div>
+    <span>MAX 2.60m</span>
+  </div>
+</div>
+<div id="tooltip"><div class="tn" id="tt-id"></div><div class="tt" id="tt-info"></div><div class="tf" id="tt-status"></div></div>
+<div id="controls">DRAG · ROTATE &nbsp;|&nbsp; SCROLL · ZOOM<br>RIGHT-DRAG · PAN &nbsp;|&nbsp; HOVER · INSPECT</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── ROUNDED RECT POLYFILL ──────────────────────────────────────
+function rrect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+// ── 29 ALTITUDE MONITORING STATIONS ───────────────────────────
+var STATIONS=[
+  {lat:10.930074, lng:106.4756106,alt:2.58},{lat:10.9296521,lng:106.4727453,alt:1.89},
+  {lat:10.9286962,lng:106.4747558,alt:1.46},{lat:10.9277517,lng:106.4767385,alt:1.64},
+  {lat:10.9259794,lng:106.4758724,alt:2.07},{lat:10.9269199,lng:106.473882, alt:1.25},
+  {lat:10.9279055,lng:106.4718973,alt:2.01},{lat:10.9261037,lng:106.4710082,alt:1.67},
+  {lat:10.9251773,lng:106.4730177,alt:1.35},{lat:10.9242421,lng:106.4748815,alt:1.78},
+  {lat:10.9247149,lng:106.4727902,alt:1.22},{lat:10.9251539,lng:106.4711908,alt:1.55},
+  {lat:10.9237011,lng:106.474084, alt:1.65},{lat:10.9240795,lng:106.4720193,alt:1.37},
+  {lat:10.9236298,lng:106.4724293,alt:1.17},{lat:10.9236772,lng:106.4729295,alt:1.55},
+  {lat:10.9212479,lng:106.4736264,alt:1.62},{lat:10.9221024,lng:106.4717129,alt:1.17},
+  {lat:10.923028, lng:106.4697054,alt:1.77},{lat:10.9212444,lng:106.4689027,alt:1.81},
+  {lat:10.9203264,lng:106.4708847,alt:1.13},{lat:10.9194203,lng:106.472847, alt:1.68},
+  {lat:10.9184718,lng:106.4700895,alt:1.09},{lat:10.9176523,lng:106.4672234,alt:1.97},
+  {lat:10.9167306,lng:106.4692015,alt:1.06},{lat:10.9158219,lng:106.4711887,alt:1.67},
+  {lat:10.9184071,lng:106.4703937,alt:1.70},{lat:10.9149836,lng:106.4683993,alt:1.12},
+  {lat:10.9159151,lng:106.466363, alt:2.05}
+];
+
+// ── 167 LOTS ───────────────────────────────────────────────────
+var LOTS=[
+  {id:1, no:'A101',  tn:'TGNHA'},    {id:2, no:'A101A', tn:'TGNHA'},
+  {id:3, no:'A101C', tn:'BONMUA'},   {id:4, no:'A101D', tn:'VANDONG'},
+  {id:5, no:'A102',  tn:'PBGROUP'},  {id:6, no:'A103',  tn:'VIETMY'},
+  {id:7, no:'A104',  tn:'CONTINENTAL'},{id:8,no:'A105A', tn:'VLXDBK'},
+  {id:9, no:'A105B', tn:'PLASTICVN'},{id:10,no:'A106',  tn:'HOANMINH'},
+  {id:11,no:'A107',  tn:'HOANMINH'}, {id:12,no:'A108',  tn:'VFI'},
+  {id:13,no:'A109',  tn:'VFI'},      {id:14,no:'A110',  tn:'CHAUPHU'},
+  {id:15,no:'A111',  tn:'MINHHUY'},  {id:16,no:'A112',  tn:'VDINHVN'},
+  {id:17,no:'A113',  tn:'FACTORY'},  {id:18,no:'A114',  tn:'TANPHAT'},
+  {id:19,no:'A115',  tn:'DAICAT'},   {id:20,no:'A116',  tn:'DASAIGON'},
+  {id:21,no:'A117',  tn:'SIAMHOLD'}, {id:22,no:'A118',  tn:'TRHOANG'},
+  {id:23,no:'A119',  tn:'DONGA'},    {id:24,no:'A120',  tn:'DONGA'},
+  {id:25,no:'A121',  tn:'DONGA'},    {id:26,no:'A122',  tn:'DONGA'},
+  {id:27,no:'A123',  tn:'DONGA'},    {id:28,no:'A124',  tn:'DONGA'},
+  {id:29,no:'A125',  tn:'DONGA'},    {id:30,no:'A126',  tn:'DONGA'},
+  {id:31,no:'A127',  tn:'DONGA'},    {id:32,no:'A128',  tn:'DONGA'},
+  {id:33,no:'A129',  tn:'DONGA'},    {id:34,no:'A130',  tn:'DONGA'},
+  // Zone A South
+  {id:35,no:'A201',  tn:'SIAMBROT'}, {id:36,no:'A202',  tn:'SIAMBROT'},
+  {id:37,no:'A203',  tn:'CANHNONG'}, {id:38,no:'A204',  tn:'HALONG'},
+  {id:39,no:'A205',  tn:'PHUCTUONG'},{id:40,no:'A206',  tn:'DUCANH'},
+  {id:41,no:'A207',  tn:'APTHIEN'},  {id:42,no:'A208',  tn:'THIENNGUU'},
+  {id:43,no:'A210',  tn:'HALONG'},   {id:44,no:'A211',  tn:'TUANKHOA'},
+  {id:45,no:'A212',  tn:'TUANKHOA'}, {id:46,no:'A213',  tn:'PHUONGYN'},
+  {id:47,no:'A214',  tn:'PHUONGYN'}, {id:48,no:'A215A', tn:'ANPHA'},
+  {id:49,no:'A215B', tn:'APTHIEN'},  {id:50,no:'A216',  tn:'GDTIEN'},
+  {id:51,no:'A217',  tn:'GDTIEN'},   {id:52,no:'A218',  tn:'GDTIEN'},
+  {id:53,no:'A219',  tn:'PHUONGYN'}, {id:54,no:'A220',  tn:'DUYHUNG'},
+  {id:55,no:'A221',  tn:'PHUONGLH'}, {id:56,no:'A222',  tn:'OCM'},
+  {id:57,no:'A223',  tn:'OCM'},      {id:58,no:'A224',  tn:'OCM'},
+  {id:59,no:'A225',  tn:'OCM'},      {id:60,no:'A226',  tn:'OCM'},
+  {id:61,no:'A227',  tn:'OCM'},      {id:62,no:'A228',  tn:'OCM'},
+  {id:63,no:'A229',  tn:'NDNOP'},    {id:64,no:'A230A', tn:'CANHNONG'},
+  {id:65,no:'A230B', tn:'XNKTHLONG'},{id:66,no:'A230C', tn:'NNPHAT'},
+  {id:67,no:'A231',  tn:'KIOSBAK'},  {id:68,no:'A232',  tn:'KIOSBAK'},
+  {id:69,no:'A233',  tn:'KIOSBAK'},  {id:70,no:'A234',  tn:'KIOSBAK'},
+  {id:71,no:'A235',  tn:'KIOSBAK'},  {id:72,no:'A235A', tn:'TRHOANG'},
+  {id:73,no:'A235B', tn:'TRHOANG'},
+  // Zone B block 1
+  {id:74, no:'B101',    tn:'NHKHANG'},  {id:75, no:'B101A',   tn:'SONGAN'},
+  {id:76, no:'B101B',   tn:'GIAHOANG'}, {id:77, no:'B102',    tn:'NHKHANG'},
+  {id:78, no:'B102A',   tn:'GIAHOANG'}, {id:79, no:'B103A',   tn:'VIETVIET'},
+  {id:80, no:'B103B',   tn:'VIETVIET'}, {id:81, no:'B104',    tn:'CNNIKA'},
+  {id:82, no:'B105',    tn:'ZHANGKUN'}, {id:83, no:'B106',    tn:'GIAMINH'},
+  {id:84, no:'B107',    tn:'KHUTRUNG'}, {id:85, no:'B113',    tn:'BIOVINA'},
+  {id:86, no:'B114',    tn:'CNATC'},    {id:87, no:'B115',    tn:'VANDAU'},
+  {id:88, no:'B116',    tn:'CHAUAU'},   {id:89, no:'B117',    tn:'EUR'},
+  {id:90, no:'B118',    tn:'PBQTE'},    {id:91, no:'B119B01', tn:'PBQTE'},
+  {id:92, no:'B119B02', tn:'CNPHUNONG'},{id:93, no:'B120A',   tn:'CNTPHU'},
+  {id:94, no:'B120B',   tn:'CNTPHU'},   {id:95, no:'B120C',   tn:'CANHTOAN'},
+  {id:96, no:'B120D',   tn:'VINASTAR'}, {id:97, no:'B120E',   tn:'CNTPHU'},
+  {id:98, no:'B120F',   tn:'CNTPHU'},   {id:99, no:'B121A',   tn:'TBDUONG'},
+  {id:100,no:'B121B',   tn:'AGRITECH'}, {id:101,no:'B122A',   tn:'CNNNGUYET'},
+  {id:102,no:'B122B',   tn:'KIKO'},     {id:103,no:'B123A',   tn:'DOHA'},
+  {id:104,no:'B124',    tn:'GSHUNG'},   {id:105,no:'B131',    tn:'SIAM'},
+  {id:106,no:'B132',    tn:'SIAM'},     {id:107,no:'B133',    tn:'VFD'},
+  {id:108,no:'B134',    tn:'VFD'},      {id:109,no:'B135',    tn:'VFD'},
+  {id:110,no:'B135A',   tn:'TRHOANG'},  {id:111,no:'B136',    tn:'SIAM'},
+  {id:112,no:'B137',    tn:'SIAM'},     {id:113,no:'B138',    tn:'SIAM'},
+  // Zone B block 2
+  {id:114,no:'B201',  tn:'GIAHOANG'}, {id:115,no:'B201A', tn:'DUCHONG'},
+  {id:116,no:'B201B', tn:'DUCHONG'},   {id:117,no:'B201C', tn:'TUANTAI'},
+  {id:118,no:'B201D', tn:'CONGAVANG'},{id:119,no:'B201E', tn:'HONGHANH'},
+  {id:120,no:'B203',  tn:'VFI'},      {id:121,no:'B204',  tn:'VFI'},
+  {id:122,no:'B205',  tn:'VFI'},      {id:123,no:'B206',  tn:'VFI'},
+  {id:124,no:'B207',  tn:'TQDUNG'},   {id:125,no:'B208',  tn:'NGVANSE'},
+  {id:126,no:'B210',  tn:'VUONGVIT'}, {id:127,no:'B211',  tn:'NTHILEN'},
+  {id:128,no:'B212',  tn:'NBPHONG'},  {id:129,no:'B213',  tn:'NGVANSE'},
+  {id:130,no:'B214',  tn:'USA'},      {id:131,no:'B215',  tn:'NAMBAC'},
+  {id:132,no:'B216A', tn:'AUVIET'},   {id:133,no:'B216B', tn:'AUVIET'},
+  {id:134,no:'B217',  tn:'CHUNGMINH'},{id:135,no:'B218A', tn:'NGHIEPNG'},
+  {id:136,no:'B218B', tn:'VANDAU'},   {id:137,no:'B219',  tn:'VUONGVIT'},
+  {id:138,no:'B219A', tn:'VFI'},      {id:139,no:'B219B', tn:'VFI'},
+  {id:140,no:'B219C', tn:'AUVIET'},   {id:141,no:'B219D', tn:'GOLHAR'},
+  {id:142,no:'B220A', tn:'HNHOA'},    {id:143,no:'B220B', tn:'HNHOA'},
+  {id:144,no:'B220C', tn:'DAMNONG'},  {id:145,no:'B220D', tn:'ADI'},
+  {id:146,no:'B221',  tn:'TRANHDE'},  {id:147,no:'B221B', tn:'THIENMA'},
+  {id:148,no:'B221C', tn:'VTN'},      {id:149,no:'B222A', tn:'SYNTAX'},
+  {id:150,no:'B222B', tn:'HCSAM'},    {id:151,no:'B223',  tn:'DAMNONG'},
+  {id:152,no:'B224',  tn:'BACHKHOA'}, {id:153,no:'B225',  tn:'HSCENTA'},
+  {id:154,no:'B226A', tn:'CNHANHSAM'},{id:155,no:'B226B', tn:'TKT'},
+  {id:156,no:'B227A', tn:'TQTRI'},    {id:157,no:'B227B', tn:'VUTHTHA'},
+  {id:158,no:'B228',  tn:'TQTRI'},    {id:159,no:'B229',  tn:'HOANGAN'},
+  {id:160,no:'B230',  tn:'NONGHOI'},  {id:161,no:'B231',  tn:'HONGANH'},
+  {id:162,no:'B232',  tn:'HONGANH'},  {id:163,no:'B233',  tn:'UFARM'},
+  {id:164,no:'B234',  tn:'ISAREL'},   {id:165,no:'B234A', tn:'LVVU'},
+  // extra 2 to fill 167
+  {id:166,no:'B235',  tn:'VACANT'},   {id:167,no:'B236',  tn:'VACANT'}
+];
+
+// ── SECTION GRID DEFINITIONS ───────────────────────────────────
+var SECT = {
+  AN:{ latN:10.9301,latS:10.9255,lngW:106.4708,lngE:106.4758,cols:3 }, // Zone A North
+  AS:{ latN:10.9255,latS:10.9215,lngW:106.4712,lngE:106.4770,cols:3 }, // Zone A South
+  BN:{ latN:10.9242,latS:10.9190,lngW:106.4682,lngE:106.4735,cols:4 }, // Zone B block 1
+  BS:{ latN:10.9192,latS:10.9145,lngW:106.4658,lngE:106.4730,cols:4 }, // Zone B block 2
+};
+
+function getSect(no){
+  if(no.charAt(0)==='A'&&parseInt(no.substring(1))>=200) return 'AS';
+  if(no.charAt(0)==='A') return 'AN';
+  var num=parseInt(no.substring(1));
+  if(num>=200) return 'BS';
+  return 'BN';
+}
+
+// Assign positions within sections
+var sectLots={AN:[],AS:[],BN:[],BS:[]};
+for(var i=0;i<LOTS.length;i++){
+  var sk=getSect(LOTS[i].no);
+  sectLots[sk].push(i);
+}
+
+function assignLatLng(sectKey, idxInSect){
+  var s=SECT[sectKey];
+  var cols=s.cols;
+  var col=idxInSect%cols;
+  var row=Math.floor(idxInSect/cols);
+  var totalRows=Math.ceil(sectLots[sectKey].length/cols);
+  // Place north-to-south (lat decreases as row increases)
+  var lat=s.latN-(row+0.5)/totalRows*(s.latN-s.latS);
+  var lng=s.lngW+(col+0.5)/cols*(s.lngE-s.lngW);
+  return{lat:lat,lng:lng};
+}
+
+// Assign lat/lng to each lot
+var sectIdxMap={AN:0,AS:0,BN:0,BS:0};
+for(var i=0;i<LOTS.length;i++){
+  var sk=getSect(LOTS[i].no);
+  var pos=assignLatLng(sk,sectIdxMap[sk]);
+  LOTS[i].lat=pos.lat; LOTS[i].lng=pos.lng;
+  sectIdxMap[sk]++;
+}
+
+// ── IDW ALTITUDE ───────────────────────────────────────────────
+function idw(lat,lng){
+  var num=0,den=0;
+  for(var i=0;i<STATIONS.length;i++){
+    var s=STATIONS[i];
+    var dx=(s.lat-lat)*111000,dy=(s.lng-lng)*111000*Math.cos(lat*Math.PI/180);
+    var dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<0.5)return s.alt;
+    var w=1/(dist*dist*dist);
+    num+=w*s.alt;den+=w;
+  }
+  return num/den;
+}
+
+// Pre-compute altitude for each lot
+for(var i=0;i<LOTS.length;i++){
+  LOTS[i].alt=Math.round(idw(LOTS[i].lat,LOTS[i].lng)*100)/100;
+}
+
+// ── WORLD COORDINATES ─────────────────────────────────────────
+var allLats=LOTS.map(function(d){return d.lat;});
+var allLngs=LOTS.map(function(d){return d.lng;});
+var rawMinLat=Math.min.apply(null,allLats), rawMaxLat=Math.max.apply(null,allLats);
+var rawMinLng=Math.min.apply(null,allLngs), rawMaxLng=Math.max.apply(null,allLngs);
+var padLat=(rawMaxLat-rawMinLat)*0.08, padLng=(rawMaxLng-rawMinLng)*0.08;
+var minLat=rawMinLat-padLat, maxLat=rawMaxLat+padLat;
+var minLng=rawMinLng-padLng, maxLng=rawMaxLng+padLng;
+var minAlt=1.05, maxAlt=2.60;
+
+var WORLD=30, VERT=10;
+
+function wX(lng){return((lng-minLng)/(maxLng-minLng)-0.5)*WORLD;}
+function wZ(lat){return((lat-minLat)/(maxLat-minLat)-0.5)*(-WORLD*0.85);}
+function wY(alt){return((alt-minAlt)/(maxAlt-minAlt))*VERT+0.1;}
+
+// Lot box dimensions based on section density
+function boxSize(sectKey){
+  var s=SECT[sectKey];
+  var rows=Math.ceil(sectLots[sectKey].length/s.cols);
+  var lngSpan=(s.lngE-s.lngW);
+  var latSpan=(s.latN-s.latS);
+  var totalW=(wX(s.lngE)-wX(s.lngW));
+  var totalD=Math.abs(wZ(s.latS)-wZ(s.latN));
+  var bw=Math.max(0.3, totalW/s.cols*0.88);
+  var bd=Math.max(0.3, totalD/rows*0.88);
+  return{w:bw,d:bd};
+}
+
+// ── SCENE SETUP ────────────────────────────────────────────────
+var W=window.innerWidth, H=window.innerHeight;
+var renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+document.body.appendChild(renderer.domElement);
+
+var scene=new THREE.Scene();
+scene.background=new THREE.Color(0x060c18);
+scene.fog=new THREE.Fog(0x060c18,65,120);
+
+var camera=new THREE.PerspectiveCamera(44,W/H,0.1,200);
+camera.position.set(0,22,32);
+camera.lookAt(new THREE.Vector3(0,2,0));
+
+var amb=new THREE.AmbientLight(0x223366,3.0); scene.add(amb);
+var sun=new THREE.DirectionalLight(0xfff4e0,2.0); sun.position.set(10,25,8); sun.castShadow=true; scene.add(sun);
+var fill=new THREE.DirectionalLight(0x0044aa,0.8); fill.position.set(-10,5,-8); scene.add(fill);
+var top2=new THREE.DirectionalLight(0x00ffcc,0.4); top2.position.set(0,15,-12); scene.add(top2);
+
+// Floor
+var fm=new THREE.Mesh(new THREE.BoxGeometry(WORLD*1.15,0.4,WORLD*0.92),
+  new THREE.MeshStandardMaterial({color:0x090f1e,roughness:0.95}));
+fm.position.set(0,-0.2,0); fm.receiveShadow=true; scene.add(fm);
+var gh=new THREE.GridHelper(WORLD*1.1,26,0x1a3a5a,0x0e1f30); gh.position.y=0.02; scene.add(gh);
+
+// Zone separator line
+var sepGeo=new THREE.BufferGeometry();
+var midLng=(rawMinLng+rawMaxLng)/2;
+var sepX=wX(midLng);
+sepGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array([sepX,-0.1,-14, sepX,-0.1,14]),3));
+scene.add(new THREE.LineSegments(sepGeo,new THREE.LineBasicMaterial({color:0x334455,transparent:true,opacity:0.5})));
+
+// Zone labels
+function makeZoneLabel(text,x,z){
+  var cv=document.createElement('canvas'); cv.width=180; cv.height=50;
+  var ctx=cv.getContext('2d');
+  ctx.fillStyle='rgba(0,0,0,0)';
+  ctx.fillRect(0,0,180,50);
+  ctx.fillStyle='#4ecdc466';
+  ctx.font='bold 22px monospace';
+  ctx.textAlign='center';
+  ctx.fillText(text,90,32);
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false}));
+  sp.scale.set(3.5,0.9,1);
+  sp.position.set(x,0.3,z);
+  scene.add(sp);
+}
+makeZoneLabel('ZONE A',wX((SECT.AN.lngW+SECT.AN.lngE)/2),-13.5);
+makeZoneLabel('ZONE B',wX((SECT.BN.lngW+SECT.BN.lngE)/2),-13.5);
+
+// ── BUILD LOT BOXES ────────────────────────────────────────────
+var lotMeshes=[], lotMats=[], lotData=[];
+var sectBoxSizes={AN:boxSize('AN'),AS:boxSize('AS'),BN:boxSize('BN'),BS:boxSize('BS')};
+
+var COL_A=new THREE.Color(0x00cc88);
+var COL_B=new THREE.Color(0x3366ff);
+var COL_FLOOD=new THREE.Color(0xff2200);
+var COL_RISK=new THREE.Color(0xffaa00);
+
+for(var i=0;i<LOTS.length;i++){
+  var d=LOTS[i];
+  var sk=getSect(d.no);
+  var bs=sectBoxSizes[sk];
+  var x=wX(d.lng), z=wZ(d.lat), h=wY(d.alt);
+  var baseCol=(d.no.charAt(0)==='A')?COL_A:COL_B;
+
+  var mat=new THREE.MeshStandardMaterial({
+    color:baseCol.clone(),
+    emissive:baseCol.clone(),
+    emissiveIntensity:0.18,
+    roughness:0.45,
+    metalness:0.2
+  });
+  var geo=new THREE.BoxGeometry(bs.w*0.88, h, bs.d*0.88);
+  var mesh=new THREE.Mesh(geo,mat);
+  mesh.position.set(x, h/2, z);
+  mesh.castShadow=true;
+  mesh.receiveShadow=true;
+  mesh.userData=d;
+  scene.add(mesh);
+  lotMeshes.push(mesh);
+  lotMats.push(mat);
+  lotData.push(d);
+
+  // Top glow cap
+  var capMat=new THREE.MeshStandardMaterial({color:baseCol.clone(),emissive:baseCol.clone(),emissiveIntensity:0.6,roughness:0.1});
+  var cap=new THREE.Mesh(new THREE.BoxGeometry(bs.w*0.88,0.06,bs.d*0.88),capMat);
+  cap.position.set(x,h+0.03,z);
+  scene.add(cap);
+}
+
+// ── FLOOD WATER PLANE ─────────────────────────────────────────
+var waterMat=new THREE.MeshStandardMaterial({
+  color:0x0055dd,transparent:true,opacity:0.42,
+  roughness:0.05,metalness:0.1,side:THREE.DoubleSide
+});
+waterMat.emissive=new THREE.Color(0x002299);
+waterMat.emissiveIntensity=0.3;
+var waterMesh=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*1.1,WORLD*0.88),waterMat);
+waterMesh.rotation.x=-Math.PI/2;
+waterMesh.position.set(0,wY(1.06),0);
+waterMesh.visible=false;
+scene.add(waterMesh);
+
+// ── FLOOD SLIDER ──────────────────────────────────────────────
+var currentFlood=1.06;
+var slider=document.getElementById('flood-slider');
+var fdisplay=document.getElementById('flood-display');
+var fbadge=document.getElementById('flood-badge');
+var ftags=document.getElementById('flooded-tags');
+
+function updateFlood(val){
+  currentFlood=val/100;
+  fdisplay.innerHTML=currentFlood.toFixed(2)+' <span class="unit">m</span>';
+  waterMesh.visible=(currentFlood>1.06);
+  waterMesh.position.y=wY(currentFlood);
+
+  var flooded=[];
+  for(var i=0;i<LOTS.length;i++){
+    var d=LOTS[i];
+    var isA=(d.no.charAt(0)==='A');
+    var baseCol=isA?COL_A:COL_B;
+    var alt=d.alt;
+    if(alt<=currentFlood){
+      flooded.push(d.no);
+      lotMats[i].color.copy(COL_FLOOD);
+      lotMats[i].emissive.copy(COL_FLOOD);
+      lotMats[i].emissiveIntensity=1.8;
+    } else if(alt<=currentFlood+0.10){
+      lotMats[i].color.copy(COL_RISK);
+      lotMats[i].emissive.copy(COL_RISK);
+      lotMats[i].emissiveIntensity=0.8;
+    } else {
+      lotMats[i].color.copy(baseCol);
+      lotMats[i].emissive.copy(baseCol);
+      lotMats[i].emissiveIntensity=0.18;
+    }
+  }
+  fbadge.textContent=flooded.length+' lot'+(flooded.length!==1?'s':'')+' flooded';
+  fbadge.className=flooded.length>0?'danger':'';
+  ftags.innerHTML=flooded.slice(0,20).map(function(n){return '<div class="ftag">⚠ '+n+'</div>';}).join('')+(flooded.length>20?'<div class="ftag">+more</div>':'');
+}
+slider.addEventListener('input',function(e){updateFlood(parseInt(e.target.value));});
+
+// ── ORBIT CONTROLS ────────────────────────────────────────────
+var drag=false,rDrag=false,prev={x:0,y:0};
+var sph={theta:-0.15,phi:0.52,r:48};
+var tgt=new THREE.Vector3(0,2,0);
+function updCam(){
+  var phi=Math.max(0.1,Math.min(1.3,sph.phi));
+  camera.position.set(
+    tgt.x+sph.r*Math.sin(phi)*Math.sin(sph.theta),
+    tgt.y+sph.r*Math.cos(phi),
+    tgt.z+sph.r*Math.sin(phi)*Math.cos(sph.theta)
+  );
+  camera.lookAt(tgt);
+}
+updCam();
+var el=renderer.domElement;
+el.addEventListener('mousedown',function(e){if(e.button===0)drag=true;if(e.button===2)rDrag=true;prev={x:e.clientX,y:e.clientY};});
+el.addEventListener('mouseup',function(){drag=false;rDrag=false;});
+el.addEventListener('contextmenu',function(e){e.preventDefault();});
+el.addEventListener('mousemove',function(e){
+  if(drag){sph.theta-=(e.clientX-prev.x)*0.007;sph.phi-=(e.clientY-prev.y)*0.005;prev={x:e.clientX,y:e.clientY};updCam();}
+  if(rDrag){
+    var dx=(e.clientX-prev.x)*0.025,dy=(e.clientY-prev.y)*0.025;
+    var fwd=new THREE.Vector3(); camera.getWorldDirection(fwd);
+    var right=new THREE.Vector3(); right.crossVectors(fwd,new THREE.Vector3(0,1,0)).normalize();
+    tgt.addScaledVector(right,-dx); tgt.y+=dy;
+    prev={x:e.clientX,y:e.clientY}; updCam();
+  }
+  doHover(e);
+});
+el.addEventListener('wheel',function(e){sph.r=Math.max(12,Math.min(80,sph.r+e.deltaY*0.04));updCam();},{passive:true});
+
+// ── HOVER TOOLTIP ─────────────────────────────────────────────
+var tt=document.getElementById('tooltip');
+var ray=new THREE.Raycaster(), m2=new THREE.Vector2();
+var hov=null;
+function doHover(e){
+  var rect=el.getBoundingClientRect();
+  m2.x=((e.clientX-rect.left)/rect.width)*2-1;
+  m2.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  ray.setFromCamera(m2,camera);
+  var hits=ray.intersectObjects(lotMeshes);
+  if(hov){hov.material.emissiveIntensity=0.18;hov.scale.set(1,1,1);hov=null;}
+  if(hits.length>0){
+    var mesh=hits[0].object;
+    mesh.material.emissiveIntensity=1.5;
+    mesh.scale.set(1.08,1,1.08);
+    hov=mesh;
+    var d=mesh.userData;
+    var flooded=(d.alt<=currentFlood);
+    var atrisk=(d.alt<=currentFlood+0.10&&!flooded);
+    document.getElementById('tt-id').textContent='LOT '+d.no+' · '+d.tn;
+    document.getElementById('tt-info').innerHTML='Zone: '+(d.no.charAt(0)==='A'?'A (North)':'B (South)')+'<br>Altitude: '+d.alt+'m<br>Section: '+getSect(d.no);
+    document.getElementById('tt-status').innerHTML=flooded?'<span style="color:#ff6644">🔴 FLOODED AT THIS LEVEL</span>':atrisk?'<span style="color:#ffaa00">🟡 AT RISK — within 0.1m</span>':'<span style="color:#00cc88">✅ SAFE AT THIS LEVEL</span>';
+    tt.style.display='block';
+    tt.style.left=(e.clientX+14)+'px';
+    tt.style.top=(e.clientY-16)+'px';
+  } else { tt.style.display='none'; }
+}
+
+// ── ANIMATE ───────────────────────────────────────────────────
+var t0=0;
+function animate(){
+  requestAnimationFrame(animate);
+  t0+=0.012;
+  if(!drag&&!rDrag){sph.theta+=0.0006;updCam();}
+  if(waterMesh.visible){
+    waterMat.opacity=0.36+0.10*Math.sin(t0*1.1);
+    waterMesh.position.y=wY(currentFlood)+0.06*Math.sin(t0*0.8);
+  }
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',function(){
+  var w=window.innerWidth,h=window.innerHeight;
+  camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);
+});
+</script>
+</body>
+</html>
