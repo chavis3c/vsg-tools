@@ -10,7 +10,11 @@ canvas { display:block; }
 #hud { position:absolute; top:14px; left:16px; pointer-events:none; }
 #hud h1 { font-size:20px; font-weight:bold; letter-spacing:4px; color:#00ffe0; text-shadow:0 0 20px #00ffe0aa; margin-bottom:2px; }
 #hud .sub { font-size:10px; color:#4ecdc477; letter-spacing:2px; }
-#stats { position:absolute; top:14px; right:16px; color:#4ecdc4; font-size:10px; text-align:right; pointer-events:none; line-height:2; }
+#hud .dim { font-size:9px; color:#33aaff88; margin-top:3px; letter-spacing:1px; }
+#compass { position:absolute; top:14px; right:16px; pointer-events:none; text-align:right; }
+#compass .north { font-size:22px; color:#ff4444; text-shadow:0 0 12px #ff444488; }
+#compass .lbl { font-size:9px; color:#4ecdc488; letter-spacing:2px; }
+#stats { position:absolute; top:80px; right:16px; color:#4ecdc4; font-size:10px; text-align:right; pointer-events:none; line-height:2; }
 #stats span { color:#00ffe0; }
 #flood-panel {
   position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
@@ -18,67 +22,81 @@ canvas { display:block; }
   border-radius:12px; padding:14px 26px 12px; min-width:400px;
   box-shadow:0 0 30px #0044ff22; user-select:none;
 }
-.fp-title { font-size:10px; letter-spacing:3px; color:#4488ff; text-align:center; margin-bottom:8px; }
-#flood-display { font-size:28px; font-weight:bold; color:#00aaff; text-align:center; text-shadow:0 0 14px #0088ffaa; margin-bottom:6px; letter-spacing:2px; }
-#flood-display .unit { font-size:13px; color:#4488ff88; }
-#flood-slider { width:100%; height:7px; -webkit-appearance:none; appearance:none; background:linear-gradient(to right,#1a3aff,#0088ff,#00ccff); border-radius:4px; outline:none; cursor:pointer; margin-bottom:8px; }
-#flood-slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#00aaff; border:3px solid #ffffff44; box-shadow:0 0 8px #00aaffaa; cursor:pointer; }
+.fp-t { font-size:10px; letter-spacing:3px; color:#4488ff; text-align:center; margin-bottom:8px; }
+#fdisplay { font-size:28px; font-weight:bold; color:#00aaff; text-align:center; text-shadow:0 0 14px #0088ffaa; margin-bottom:6px; }
+#fdisplay .u { font-size:13px; color:#4488ff88; }
+#fslider { width:100%; height:7px; -webkit-appearance:none; appearance:none; background:linear-gradient(to right,#1a3aff,#0088ff,#00ccff); border-radius:4px; outline:none; cursor:pointer; margin-bottom:8px; }
+#fslider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#00aaff; border:3px solid #fff4; box-shadow:0 0 8px #00aaffaa; cursor:pointer; }
 .fp-row { display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#4488ff88; letter-spacing:1px; }
-#flood-badge { font-size:12px; font-weight:bold; padding:3px 12px; border-radius:16px; background:rgba(0,50,200,0.3); border:1px solid #0066ff66; color:#fff; letter-spacing:1px; }
-#flood-badge.danger { background:rgba(200,0,0,0.35); border-color:#ff333366; color:#ff9988; }
-#flooded-tags { position:absolute; bottom:110px; left:50%; transform:translateX(-50%); display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:700px; pointer-events:none; }
-.ftag { font-size:10px; font-weight:bold; padding:2px 8px; border-radius:8px; background:rgba(200,30,0,0.8); border:1px solid #ff4433; color:#ffccaa; letter-spacing:1px; }
+#fbadge { font-size:12px; font-weight:bold; padding:3px 12px; border-radius:16px; background:rgba(0,50,200,0.3); border:1px solid #0066ff66; color:#fff; }
+#fbadge.danger { background:rgba(200,0,0,0.35); border-color:#ff3333; color:#ff9988; }
+#ftags { position:absolute; bottom:108px; left:50%; transform:translateX(-50%); display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:700px; pointer-events:none; }
+.ftag { font-size:10px; font-weight:bold; padding:2px 8px; border-radius:8px; background:rgba(200,30,0,0.8); border:1px solid #ff4433; color:#ffccaa; }
 #legend { position:absolute; bottom:150px; left:16px; pointer-events:none; }
 .leg-t { font-size:9px; color:#4ecdc4; letter-spacing:2px; margin-bottom:5px; }
-.leg-row { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
-.leg-box { width:14px; height:10px; border-radius:2px; }
-.leg-lbl { font-size:9px; color:#aaccbb; letter-spacing:1px; }
-#tooltip { position:absolute; display:none; background:rgba(2,10,22,0.95); border:1px solid #00ffe055; border-radius:8px; padding:8px 12px; pointer-events:none; min-width:190px; }
+.lr { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+.lb { width:14px; height:10px; border-radius:2px; }
+.ll { font-size:9px; color:#aaccbb; letter-spacing:1px; }
+#tooltip { position:absolute; display:none; background:rgba(2,10,22,0.95); border:1px solid #00ffe055; border-radius:8px; padding:8px 12px; pointer-events:none; min-width:200px; }
 #tooltip .tn { font-size:14px; font-weight:bold; color:#00ffe0; margin-bottom:3px; }
-#tooltip .tt { font-size:11px; color:#aaffee; line-height:1.6; }
-#tooltip .tf { font-size:10px; margin-top:3px; }
-#controls { position:absolute; bottom:18px; right:16px; color:#4ecdc455; font-size:9px; text-align:right; pointer-events:none; line-height:2; letter-spacing:1px; }
+#tooltip .tt { font-size:11px; color:#aaffee; line-height:1.7; }
+#tooltip .ts { font-size:10px; margin-top:3px; }
+#controls { position:absolute; bottom:18px; right:16px; color:#4ecdc455; font-size:9px; text-align:right; pointer-events:none; line-height:2; }
 </style>
 </head>
 <body>
-<div id="hud"><h1>⬡ THAI HOA IP</h1><div class="sub">FLOOD MONITOR · 167 LOTS · ZONE A+B</div></div>
-<div id="stats">ZONE A: <span>73 lots</span><br>ZONE B: <span>94 lots</span><br>ALT RANGE: <span>1.06m–2.58m</span></div>
+<div id="hud">
+  <h1>⬡ THAI HOA IP</h1>
+  <div class="sub">FLOOD MONITOR · 167 LOTS · ZONE A+B</div>
+  <div class="dim">▲ NORTH  |  500m × 2,000m  |  IDW ALTITUDE</div>
+</div>
+<div id="compass"><div class="north">↑ N</div><div class="lbl">NORTH</div></div>
+<div id="stats">ZONE A (NORTH): <span>73 lots</span><br>ZONE B (SOUTH): <span>94 lots</span><br>ALT RANGE: <span>1.06–2.58m</span></div>
 <div id="legend">
   <div class="leg-t">LOT STATUS</div>
-  <div class="leg-row"><div class="leg-box" style="background:#00cc88"></div><span class="leg-lbl">ZONE A — SAFE</span></div>
-  <div class="leg-row"><div class="leg-box" style="background:#3366ff"></div><span class="leg-lbl">ZONE B — SAFE</span></div>
-  <div class="leg-row"><div class="leg-box" style="background:#ff3300"></div><span class="leg-lbl">FLOODED ⚠</span></div>
-  <div class="leg-row"><div class="leg-box" style="background:#ffaa00"></div><span class="leg-lbl">AT RISK (±0.1m)</span></div>
-  <div class="leg-row"><div class="leg-box" style="background:rgba(0,80,220,0.5)"></div><span class="leg-lbl">FLOOD WATER</span></div>
+  <div class="lr"><div class="lb" style="background:#00cc88"></div><span class="ll">ZONE A — SAFE</span></div>
+  <div class="lr"><div class="lb" style="background:#4477ff"></div><span class="ll">ZONE B — SAFE</span></div>
+  <div class="lr"><div class="lb" style="background:#ff2200"></div><span class="ll">FLOODED ⚠</span></div>
+  <div class="lr"><div class="lb" style="background:#ffaa00"></div><span class="ll">AT RISK (±0.1m)</span></div>
+  <div class="lr"><div class="lb" style="background:rgba(0,80,220,0.5)"></div><span class="ll">FLOOD WATER</span></div>
 </div>
-<div id="flooded-tags"></div>
+<div id="ftags"></div>
 <div id="flood-panel">
-  <div class="fp-title">🌊 FLOOD WATER LEVEL SIMULATION</div>
-  <div id="flood-display">1.06 <span class="unit">m</span></div>
-  <input type="range" id="flood-slider" min="106" max="260" value="106" step="1">
-  <div class="fp-row">
-    <span>MIN 1.06m</span>
-    <div id="flood-badge">0 lots flooded</div>
-    <span>MAX 2.60m</span>
-  </div>
+  <div class="fp-t">🌊 FLOOD WATER LEVEL SIMULATION</div>
+  <div id="fdisplay">1.06 <span class="u">m</span></div>
+  <input type="range" id="fslider" min="106" max="260" value="106" step="1">
+  <div class="fp-row"><span>MIN 1.06m</span><div id="fbadge">0 lots flooded</div><span>MAX 2.60m</span></div>
 </div>
-<div id="tooltip"><div class="tn" id="tt-id"></div><div class="tt" id="tt-info"></div><div class="tf" id="tt-status"></div></div>
-<div id="controls">DRAG · ROTATE &nbsp;|&nbsp; SCROLL · ZOOM<br>RIGHT-DRAG · PAN &nbsp;|&nbsp; HOVER · INSPECT</div>
+<div id="tooltip"><div class="tn" id="tt-id"></div><div class="tt" id="tt-info"></div><div class="ts" id="tt-st"></div></div>
+<div id="controls">DRAG · ROTATE &nbsp;|&nbsp; SCROLL · ZOOM<br>RIGHT-DRAG · PAN &nbsp;|&nbsp; HOVER · LOT INFO</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// ── ROUNDED RECT POLYFILL ──────────────────────────────────────
-function rrect(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
-  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
-  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
-  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
-  ctx.closePath();
+// ── PARK DIMENSIONS ───────────────────────────────────────────
+// Real: 500m wide (E-W) × 2000m long (N-S)
+// World units: PW=10 (500m), PL=40 (2000m) → scale 0.02 units/m
+// Zone A: NORTH half (z: -20 to 0)
+// Zone B: SOUTH half (z: 0 to +20)
+// X: -5 to +5 (500m width)
+
+var PW=10, PH_A=20, PH_B=20; // park half-widths
+var SCALE=0.02; // world units per meter
+var VERT=8;     // vertical exaggeration scale
+
+// Park GPS reference for IDW calculations
+var PARK_CENTER_LAT=10.9225, PARK_CENTER_LNG=106.4712;
+var M_PER_LAT=111000, M_PER_LNG=109600; // approx at this location
+
+// Convert world (x,z) to approx GPS for IDW
+function worldToGPS(x,z){
+  // x: E-W (+x = east), z: N-S (-z = north, +z = south)
+  var lat = PARK_CENTER_LAT - z/SCALE/M_PER_LAT;
+  var lng = PARK_CENTER_LNG + x/SCALE/M_PER_LNG;
+  return{lat:lat,lng:lng};
 }
 
-// ── 29 ALTITUDE MONITORING STATIONS ───────────────────────────
-var STATIONS=[
+// ── 29 ALTITUDE STATIONS ──────────────────────────────────────
+var STA=[
   {lat:10.930074, lng:106.4756106,alt:2.58},{lat:10.9296521,lng:106.4727453,alt:1.89},
   {lat:10.9286962,lng:106.4747558,alt:1.46},{lat:10.9277517,lng:106.4767385,alt:1.64},
   {lat:10.9259794,lng:106.4758724,alt:2.07},{lat:10.9269199,lng:106.473882, alt:1.25},
@@ -96,191 +114,133 @@ var STATIONS=[
   {lat:10.9159151,lng:106.466363, alt:2.05}
 ];
 
-// ── 167 LOTS ───────────────────────────────────────────────────
+function idw(lat,lng){
+  var n=0,d=0;
+  for(var i=0;i<STA.length;i++){
+    var s=STA[i];
+    var dx=(s.lat-lat)*M_PER_LAT, dy=(s.lng-lng)*M_PER_LNG;
+    var dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<1)return s.alt;
+    var w=1/(dist*dist*dist);
+    n+=w*s.alt; d+=w;
+  }
+  return n/d;
+}
+
+function wY(alt){ return((alt-1.05)/(2.60-1.05))*VERT+0.1; }
+
+// ── 167 LOTS DATA ─────────────────────────────────────────────
 var LOTS=[
-  {id:1, no:'A101',  tn:'TGNHA'},    {id:2, no:'A101A', tn:'TGNHA'},
-  {id:3, no:'A101C', tn:'BONMUA'},   {id:4, no:'A101D', tn:'VANDONG'},
-  {id:5, no:'A102',  tn:'PBGROUP'},  {id:6, no:'A103',  tn:'VIETMY'},
-  {id:7, no:'A104',  tn:'CONTINENTAL'},{id:8,no:'A105A', tn:'VLXDBK'},
-  {id:9, no:'A105B', tn:'PLASTICVN'},{id:10,no:'A106',  tn:'HOANMINH'},
-  {id:11,no:'A107',  tn:'HOANMINH'}, {id:12,no:'A108',  tn:'VFI'},
-  {id:13,no:'A109',  tn:'VFI'},      {id:14,no:'A110',  tn:'CHAUPHU'},
-  {id:15,no:'A111',  tn:'MINHHUY'},  {id:16,no:'A112',  tn:'VDINHVN'},
-  {id:17,no:'A113',  tn:'FACTORY'},  {id:18,no:'A114',  tn:'TANPHAT'},
-  {id:19,no:'A115',  tn:'DAICAT'},   {id:20,no:'A116',  tn:'DASAIGON'},
-  {id:21,no:'A117',  tn:'SIAMHOLD'}, {id:22,no:'A118',  tn:'TRHOANG'},
-  {id:23,no:'A119',  tn:'DONGA'},    {id:24,no:'A120',  tn:'DONGA'},
-  {id:25,no:'A121',  tn:'DONGA'},    {id:26,no:'A122',  tn:'DONGA'},
-  {id:27,no:'A123',  tn:'DONGA'},    {id:28,no:'A124',  tn:'DONGA'},
-  {id:29,no:'A125',  tn:'DONGA'},    {id:30,no:'A126',  tn:'DONGA'},
-  {id:31,no:'A127',  tn:'DONGA'},    {id:32,no:'A128',  tn:'DONGA'},
-  {id:33,no:'A129',  tn:'DONGA'},    {id:34,no:'A130',  tn:'DONGA'},
-  // Zone A South
-  {id:35,no:'A201',  tn:'SIAMBROT'}, {id:36,no:'A202',  tn:'SIAMBROT'},
-  {id:37,no:'A203',  tn:'CANHNONG'}, {id:38,no:'A204',  tn:'HALONG'},
-  {id:39,no:'A205',  tn:'PHUCTUONG'},{id:40,no:'A206',  tn:'DUCANH'},
-  {id:41,no:'A207',  tn:'APTHIEN'},  {id:42,no:'A208',  tn:'THIENNGUU'},
-  {id:43,no:'A210',  tn:'HALONG'},   {id:44,no:'A211',  tn:'TUANKHOA'},
-  {id:45,no:'A212',  tn:'TUANKHOA'}, {id:46,no:'A213',  tn:'PHUONGYN'},
-  {id:47,no:'A214',  tn:'PHUONGYN'}, {id:48,no:'A215A', tn:'ANPHA'},
-  {id:49,no:'A215B', tn:'APTHIEN'},  {id:50,no:'A216',  tn:'GDTIEN'},
-  {id:51,no:'A217',  tn:'GDTIEN'},   {id:52,no:'A218',  tn:'GDTIEN'},
-  {id:53,no:'A219',  tn:'PHUONGYN'}, {id:54,no:'A220',  tn:'DUYHUNG'},
-  {id:55,no:'A221',  tn:'PHUONGLH'}, {id:56,no:'A222',  tn:'OCM'},
-  {id:57,no:'A223',  tn:'OCM'},      {id:58,no:'A224',  tn:'OCM'},
-  {id:59,no:'A225',  tn:'OCM'},      {id:60,no:'A226',  tn:'OCM'},
-  {id:61,no:'A227',  tn:'OCM'},      {id:62,no:'A228',  tn:'OCM'},
-  {id:63,no:'A229',  tn:'NDNOP'},    {id:64,no:'A230A', tn:'CANHNONG'},
-  {id:65,no:'A230B', tn:'XNKTHLONG'},{id:66,no:'A230C', tn:'NNPHAT'},
-  {id:67,no:'A231',  tn:'KIOSBAK'},  {id:68,no:'A232',  tn:'KIOSBAK'},
-  {id:69,no:'A233',  tn:'KIOSBAK'},  {id:70,no:'A234',  tn:'KIOSBAK'},
-  {id:71,no:'A235',  tn:'KIOSBAK'},  {id:72,no:'A235A', tn:'TRHOANG'},
-  {id:73,no:'A235B', tn:'TRHOANG'},
-  // Zone B block 1
-  {id:74, no:'B101',    tn:'NHKHANG'},  {id:75, no:'B101A',   tn:'SONGAN'},
-  {id:76, no:'B101B',   tn:'GIAHOANG'}, {id:77, no:'B102',    tn:'NHKHANG'},
-  {id:78, no:'B102A',   tn:'GIAHOANG'}, {id:79, no:'B103A',   tn:'VIETVIET'},
-  {id:80, no:'B103B',   tn:'VIETVIET'}, {id:81, no:'B104',    tn:'CNNIKA'},
-  {id:82, no:'B105',    tn:'ZHANGKUN'}, {id:83, no:'B106',    tn:'GIAMINH'},
-  {id:84, no:'B107',    tn:'KHUTRUNG'}, {id:85, no:'B113',    tn:'BIOVINA'},
-  {id:86, no:'B114',    tn:'CNATC'},    {id:87, no:'B115',    tn:'VANDAU'},
-  {id:88, no:'B116',    tn:'CHAUAU'},   {id:89, no:'B117',    tn:'EUR'},
-  {id:90, no:'B118',    tn:'PBQTE'},    {id:91, no:'B119B01', tn:'PBQTE'},
-  {id:92, no:'B119B02', tn:'CNPHUNONG'},{id:93, no:'B120A',   tn:'CNTPHU'},
-  {id:94, no:'B120B',   tn:'CNTPHU'},   {id:95, no:'B120C',   tn:'CANHTOAN'},
-  {id:96, no:'B120D',   tn:'VINASTAR'}, {id:97, no:'B120E',   tn:'CNTPHU'},
-  {id:98, no:'B120F',   tn:'CNTPHU'},   {id:99, no:'B121A',   tn:'TBDUONG'},
-  {id:100,no:'B121B',   tn:'AGRITECH'}, {id:101,no:'B122A',   tn:'CNNNGUYET'},
-  {id:102,no:'B122B',   tn:'KIKO'},     {id:103,no:'B123A',   tn:'DOHA'},
-  {id:104,no:'B124',    tn:'GSHUNG'},   {id:105,no:'B131',    tn:'SIAM'},
-  {id:106,no:'B132',    tn:'SIAM'},     {id:107,no:'B133',    tn:'VFD'},
-  {id:108,no:'B134',    tn:'VFD'},      {id:109,no:'B135',    tn:'VFD'},
-  {id:110,no:'B135A',   tn:'TRHOANG'},  {id:111,no:'B136',    tn:'SIAM'},
-  {id:112,no:'B137',    tn:'SIAM'},     {id:113,no:'B138',    tn:'SIAM'},
-  // Zone B block 2
-  {id:114,no:'B201',  tn:'GIAHOANG'}, {id:115,no:'B201A', tn:'DUCHONG'},
-  {id:116,no:'B201B', tn:'DUCHONG'},   {id:117,no:'B201C', tn:'TUANTAI'},
-  {id:118,no:'B201D', tn:'CONGAVANG'},{id:119,no:'B201E', tn:'HONGHANH'},
-  {id:120,no:'B203',  tn:'VFI'},      {id:121,no:'B204',  tn:'VFI'},
-  {id:122,no:'B205',  tn:'VFI'},      {id:123,no:'B206',  tn:'VFI'},
-  {id:124,no:'B207',  tn:'TQDUNG'},   {id:125,no:'B208',  tn:'NGVANSE'},
-  {id:126,no:'B210',  tn:'VUONGVIT'}, {id:127,no:'B211',  tn:'NTHILEN'},
-  {id:128,no:'B212',  tn:'NBPHONG'},  {id:129,no:'B213',  tn:'NGVANSE'},
-  {id:130,no:'B214',  tn:'USA'},      {id:131,no:'B215',  tn:'NAMBAC'},
-  {id:132,no:'B216A', tn:'AUVIET'},   {id:133,no:'B216B', tn:'AUVIET'},
-  {id:134,no:'B217',  tn:'CHUNGMINH'},{id:135,no:'B218A', tn:'NGHIEPNG'},
-  {id:136,no:'B218B', tn:'VANDAU'},   {id:137,no:'B219',  tn:'VUONGVIT'},
-  {id:138,no:'B219A', tn:'VFI'},      {id:139,no:'B219B', tn:'VFI'},
-  {id:140,no:'B219C', tn:'AUVIET'},   {id:141,no:'B219D', tn:'GOLHAR'},
-  {id:142,no:'B220A', tn:'HNHOA'},    {id:143,no:'B220B', tn:'HNHOA'},
-  {id:144,no:'B220C', tn:'DAMNONG'},  {id:145,no:'B220D', tn:'ADI'},
-  {id:146,no:'B221',  tn:'TRANHDE'},  {id:147,no:'B221B', tn:'THIENMA'},
-  {id:148,no:'B221C', tn:'VTN'},      {id:149,no:'B222A', tn:'SYNTAX'},
-  {id:150,no:'B222B', tn:'HCSAM'},    {id:151,no:'B223',  tn:'DAMNONG'},
-  {id:152,no:'B224',  tn:'BACHKHOA'}, {id:153,no:'B225',  tn:'HSCENTA'},
-  {id:154,no:'B226A', tn:'CNHANHSAM'},{id:155,no:'B226B', tn:'TKT'},
-  {id:156,no:'B227A', tn:'TQTRI'},    {id:157,no:'B227B', tn:'VUTHTHA'},
-  {id:158,no:'B228',  tn:'TQTRI'},    {id:159,no:'B229',  tn:'HOANGAN'},
-  {id:160,no:'B230',  tn:'NONGHOI'},  {id:161,no:'B231',  tn:'HONGANH'},
-  {id:162,no:'B232',  tn:'HONGANH'},  {id:163,no:'B233',  tn:'UFARM'},
-  {id:164,no:'B234',  tn:'ISAREL'},   {id:165,no:'B234A', tn:'LVVU'},
-  // extra 2 to fill 167
-  {id:166,no:'B235',  tn:'VACANT'},   {id:167,no:'B236',  tn:'VACANT'}
+  // Zone A — North (A1xx: rows 1-34, A2xx: rows 35-73)
+  {no:'A101', tn:'TGNHA'},   {no:'A101A',tn:'TGNHA'},  {no:'A101C',tn:'BONMUA'},
+  {no:'A101D',tn:'VANDONG'}, {no:'A102', tn:'PBGROUP'},{no:'A103', tn:'VIETMY'},
+  {no:'A104', tn:'CONTINENTAL'},{no:'A105A',tn:'VLXDBK'},{no:'A105B',tn:'PLASTIC'},
+  {no:'A106', tn:'HOANMINH'},{no:'A107', tn:'HOANMINH'},{no:'A108', tn:'VFI'},
+  {no:'A109', tn:'VFI'},    {no:'A110', tn:'CHAUPHU'}, {no:'A111', tn:'MINHHUY'},
+  {no:'A112', tn:'VDINHVN'},{no:'A113', tn:'FACTORY'}, {no:'A114', tn:'TANPHAT'},
+  {no:'A115', tn:'DAICAT'},  {no:'A116', tn:'DASAIGON'},{no:'A117', tn:'SIAMHOLD'},
+  {no:'A118', tn:'TRHOANG'}, {no:'A119', tn:'DONGA'},   {no:'A120', tn:'DONGA'},
+  {no:'A121', tn:'DONGA'},   {no:'A122', tn:'DONGA'},   {no:'A123', tn:'DONGA'},
+  {no:'A124', tn:'DONGA'},   {no:'A125', tn:'DONGA'},   {no:'A126', tn:'DONGA'},
+  {no:'A127', tn:'DONGA'},   {no:'A128', tn:'DONGA'},   {no:'A129', tn:'DONGA'},
+  {no:'A130', tn:'DONGA'},
+  // A2xx
+  {no:'A201', tn:'SIAMBROT'},{no:'A202', tn:'SIAMBROT'},{no:'A203', tn:'CANHNONG'},
+  {no:'A204', tn:'HALONG'},  {no:'A205', tn:'PHUCTUONG'},{no:'A206',tn:'DUCANH'},
+  {no:'A207', tn:'APTHIEN'}, {no:'A208', tn:'THIENNGUU'},{no:'A210',tn:'HALONG'},
+  {no:'A211', tn:'TUANKHOA'},{no:'A212', tn:'TUANKHOA'},{no:'A213', tn:'PHUONGYN'},
+  {no:'A214', tn:'PHUONGYN'},{no:'A215A',tn:'ANPHA'},   {no:'A215B',tn:'APTHIEN'},
+  {no:'A216', tn:'GDTIEN'},  {no:'A217', tn:'GDTIEN'},  {no:'A218', tn:'GDTIEN'},
+  {no:'A219', tn:'PHUONGYN'},{no:'A220', tn:'DUYHUNG'}, {no:'A221', tn:'PHUONGLH'},
+  {no:'A222', tn:'OCM'},     {no:'A223', tn:'OCM'},     {no:'A224', tn:'OCM'},
+  {no:'A225', tn:'OCM'},     {no:'A226', tn:'OCM'},     {no:'A227', tn:'OCM'},
+  {no:'A228', tn:'OCM'},     {no:'A229', tn:'NDNOP'},   {no:'A230A',tn:'CANHNONG'},
+  {no:'A230B',tn:'XNKTL'},   {no:'A230C',tn:'NNPHAT'},  {no:'A231', tn:'KIOSBAK'},
+  {no:'A232', tn:'KIOSBAK'}, {no:'A233', tn:'KIOSBAK'}, {no:'A234', tn:'KIOSBAK'},
+  {no:'A235', tn:'KIOSBAK'}, {no:'A235A',tn:'TRHOANG'}, {no:'A235B',tn:'TRHOANG'},
+  // Zone B — South (B1xx: rows 1-40, B2xx: rows 41-94)
+  {no:'B101',  tn:'NHKHANG'},{no:'B101A', tn:'SONGAN'},  {no:'B101B', tn:'GIAHOANG'},
+  {no:'B102',  tn:'NHKHANG'},{no:'B102A', tn:'GIAHOANG'},{no:'B103A', tn:'VIETVIET'},
+  {no:'B103B', tn:'VIETVIET'},{no:'B104', tn:'CNNIKA'},  {no:'B105',  tn:'ZHANGKUN'},
+  {no:'B106',  tn:'GIAMINH'},{no:'B107',  tn:'KHUTRUNG'},{no:'B113',  tn:'BIOVINA'},
+  {no:'B114',  tn:'CNATC'},  {no:'B115',  tn:'VANDAU'},  {no:'B116',  tn:'CHAUAU'},
+  {no:'B117',  tn:'EUR'},    {no:'B118',  tn:'PBQTE'},   {no:'B119B1',tn:'PBQTE'},
+  {no:'B119B2',tn:'PHUNONG'},{no:'B120A', tn:'CNTPHU'},  {no:'B120B', tn:'CNTPHU'},
+  {no:'B120C', tn:'CANHTOAN'},{no:'B120D',tn:'VINASTAR'},{no:'B120E', tn:'CNTPHU'},
+  {no:'B120F', tn:'CNTPHU'}, {no:'B121A', tn:'TBDUONG'}, {no:'B121B', tn:'AGRITECH'},
+  {no:'B122A', tn:'CNNNGUYET'},{no:'B122B',tn:'KIKO'},   {no:'B123A', tn:'DOHA'},
+  {no:'B124',  tn:'TRUECARE'},{no:'B131', tn:'SIAM'},    {no:'B132',  tn:'SIAM'},
+  {no:'B133',  tn:'VFD'},    {no:'B134',  tn:'VFD'},     {no:'B135',  tn:'VFD'},
+  {no:'B135A', tn:'TRHOANG'},{no:'B136',  tn:'SIAM'},    {no:'B137',  tn:'SIAM'},
+  {no:'B138',  tn:'SIAM'},
+  // B2xx
+  {no:'B201',  tn:'GIAHOANG'},{no:'B201A',tn:'DUCHONG'}, {no:'B201B', tn:'DUCHONG'},
+  {no:'B201C', tn:'TUANTAI'},{no:'B201D', tn:'CONGAVANG'},{no:'B201E',tn:'HONGHANH'},
+  {no:'B203',  tn:'VFI'},    {no:'B204',  tn:'VFI'},     {no:'B205',  tn:'VFI'},
+  {no:'B206',  tn:'VFI'},    {no:'B207',  tn:'TQDUNG'},  {no:'B208',  tn:'NGVANSE'},
+  {no:'B210',  tn:'VUONGVIT'},{no:'B211', tn:'NTHILEN'}, {no:'B212',  tn:'NBPHONG'},
+  {no:'B213',  tn:'NGVANSE'},{no:'B214',  tn:'USA'},     {no:'B215',  tn:'NAMBAC'},
+  {no:'B216A', tn:'AUVIET'}, {no:'B216B', tn:'AUVIET'},  {no:'B217',  tn:'CHUNGMINH'},
+  {no:'B218A', tn:'NGHIEPNG'},{no:'B218B',tn:'VANDAU'},  {no:'B219',  tn:'VUONGVIT'},
+  {no:'B219A', tn:'VFI'},    {no:'B219B', tn:'VFI'},     {no:'B219C', tn:'AUVIET'},
+  {no:'B219D', tn:'GOLHAR'}, {no:'B220A', tn:'HNHOA'},   {no:'B220B', tn:'HNHOA'},
+  {no:'B220C', tn:'DAMNONG'},{no:'B220D', tn:'ADI'},     {no:'B221',  tn:'TRANHDE'},
+  {no:'B221B', tn:'THIENMA'},{no:'B221C', tn:'VTN'},     {no:'B222A', tn:'SYNTAX'},
+  {no:'B222B', tn:'HCSAM'},  {no:'B223',  tn:'DAMNONG'}, {no:'B224',  tn:'BACHKHOA'},
+  {no:'B225',  tn:'HSCENTA'},{no:'B226A', tn:'CNHANHSAM'},{no:'B226B',tn:'TKT'},
+  {no:'B227A', tn:'TQTRI'},  {no:'B227B', tn:'VUTHTHA'}, {no:'B228',  tn:'TQTRI'},
+  {no:'B229',  tn:'HOANGAN'},{no:'B230',  tn:'NONGHOI'},  {no:'B231',  tn:'HONGANH'},
+  {no:'B232',  tn:'HONGANH'},{no:'B233',  tn:'UFARM'},    {no:'B234',  tn:'ISAREL'},
+  {no:'B234A', tn:'LVVU'}
 ];
 
-// ── SECTION GRID DEFINITIONS ───────────────────────────────────
-var SECT = {
-  AN:{ latN:10.9301,latS:10.9255,lngW:106.4708,lngE:106.4758,cols:3 }, // Zone A North
-  AS:{ latN:10.9255,latS:10.9215,lngW:106.4712,lngE:106.4770,cols:3 }, // Zone A South
-  BN:{ latN:10.9242,latS:10.9190,lngW:106.4682,lngE:106.4735,cols:4 }, // Zone B block 1
-  BS:{ latN:10.9192,latS:10.9145,lngW:106.4658,lngE:106.4730,cols:4 }, // Zone B block 2
-};
+// ── ASSIGN WORLD POSITIONS (rectangular grid) ─────────────────
+// Zone A: north half  z from -PH_A to 0
+// Zone B: south half  z from 0 to +PH_B
+// Both: x from -PW/2 to +PW/2 = -5 to +5
+var COLS_A=5, COLS_B=5;
+var ROAD_GAP=0.5; // road at z=0 between zones
 
-function getSect(no){
-  if(no.charAt(0)==='A'&&parseInt(no.substring(1))>=200) return 'AS';
-  if(no.charAt(0)==='A') return 'AN';
-  var num=parseInt(no.substring(1));
-  if(num>=200) return 'BS';
-  return 'BN';
-}
-
-// Assign positions within sections
-var sectLots={AN:[],AS:[],BN:[],BS:[]};
+// Separate A and B lots
+var lotsA=[], lotsB=[];
 for(var i=0;i<LOTS.length;i++){
-  var sk=getSect(LOTS[i].no);
-  sectLots[sk].push(i);
+  if(LOTS[i].no.charAt(0)==='A') lotsA.push(LOTS[i]);
+  else lotsB.push(LOTS[i]);
 }
 
-function assignLatLng(sectKey, idxInSect){
-  var s=SECT[sectKey];
-  var cols=s.cols;
-  var col=idxInSect%cols;
-  var row=Math.floor(idxInSect/cols);
-  var totalRows=Math.ceil(sectLots[sectKey].length/cols);
-  // Place north-to-south (lat decreases as row increases)
-  var lat=s.latN-(row+0.5)/totalRows*(s.latN-s.latS);
-  var lng=s.lngW+(col+0.5)/cols*(s.lngE-s.lngW);
-  return{lat:lat,lng:lng};
+var rowsA=Math.ceil(lotsA.length/COLS_A);
+var rowsB=Math.ceil(lotsB.length/COLS_B);
+
+var lotWA=(PW-0.4*(COLS_A-1))/COLS_A;  // lot width Zone A
+var lotDA=(PH_A-0.3*(rowsA-1)-ROAD_GAP)/rowsA; // lot depth Zone A
+var lotWB=(PW-0.4*(COLS_B-1))/COLS_B;
+var lotDB=(PH_B-0.3*(rowsB-1)-ROAD_GAP)/rowsB;
+
+// Assign x,z to Zone A lots (north = negative z)
+for(var i=0;i<lotsA.length;i++){
+  var col=i%COLS_A, row=Math.floor(i/COLS_A);
+  var x=-PW/2 + lotWA/2 + col*(lotWA+0.4);
+  var z=-ROAD_GAP/2 - lotDA/2 - row*(lotDA+0.3);
+  var gps=worldToGPS(x,z);
+  lotsA[i].x=x; lotsA[i].z=z;
+  lotsA[i].alt=Math.round(idw(gps.lat,gps.lng)*100)/100;
+  lotsA[i].zone='A';
 }
 
-// Assign lat/lng to each lot
-var sectIdxMap={AN:0,AS:0,BN:0,BS:0};
-for(var i=0;i<LOTS.length;i++){
-  var sk=getSect(LOTS[i].no);
-  var pos=assignLatLng(sk,sectIdxMap[sk]);
-  LOTS[i].lat=pos.lat; LOTS[i].lng=pos.lng;
-  sectIdxMap[sk]++;
+// Assign x,z to Zone B lots (south = positive z)
+for(var i=0;i<lotsB.length;i++){
+  var col=i%COLS_B, row=Math.floor(i/COLS_B);
+  var x=-PW/2 + lotWB/2 + col*(lotWB+0.4);
+  var z=ROAD_GAP/2 + lotDB/2 + row*(lotDB+0.3);
+  var gps=worldToGPS(x,z);
+  lotsB[i].x=x; lotsB[i].z=z;
+  lotsB[i].alt=Math.round(idw(gps.lat,gps.lng)*100)/100;
+  lotsB[i].zone='B';
 }
 
-// ── IDW ALTITUDE ───────────────────────────────────────────────
-function idw(lat,lng){
-  var num=0,den=0;
-  for(var i=0;i<STATIONS.length;i++){
-    var s=STATIONS[i];
-    var dx=(s.lat-lat)*111000,dy=(s.lng-lng)*111000*Math.cos(lat*Math.PI/180);
-    var dist=Math.sqrt(dx*dx+dy*dy);
-    if(dist<0.5)return s.alt;
-    var w=1/(dist*dist*dist);
-    num+=w*s.alt;den+=w;
-  }
-  return num/den;
-}
+var ALL_LOTS=lotsA.concat(lotsB);
 
-// Pre-compute altitude for each lot
-for(var i=0;i<LOTS.length;i++){
-  LOTS[i].alt=Math.round(idw(LOTS[i].lat,LOTS[i].lng)*100)/100;
-}
-
-// ── WORLD COORDINATES ─────────────────────────────────────────
-var allLats=LOTS.map(function(d){return d.lat;});
-var allLngs=LOTS.map(function(d){return d.lng;});
-var rawMinLat=Math.min.apply(null,allLats), rawMaxLat=Math.max.apply(null,allLats);
-var rawMinLng=Math.min.apply(null,allLngs), rawMaxLng=Math.max.apply(null,allLngs);
-var padLat=(rawMaxLat-rawMinLat)*0.08, padLng=(rawMaxLng-rawMinLng)*0.08;
-var minLat=rawMinLat-padLat, maxLat=rawMaxLat+padLat;
-var minLng=rawMinLng-padLng, maxLng=rawMaxLng+padLng;
-var minAlt=1.05, maxAlt=2.60;
-
-var WORLD=30, VERT=10;
-
-function wX(lng){return((lng-minLng)/(maxLng-minLng)-0.5)*WORLD;}
-function wZ(lat){return((lat-minLat)/(maxLat-minLat)-0.5)*(-WORLD*0.85);}
-function wY(alt){return((alt-minAlt)/(maxAlt-minAlt))*VERT+0.1;}
-
-// Lot box dimensions based on section density
-function boxSize(sectKey){
-  var s=SECT[sectKey];
-  var rows=Math.ceil(sectLots[sectKey].length/s.cols);
-  var lngSpan=(s.lngE-s.lngW);
-  var latSpan=(s.latN-s.latS);
-  var totalW=(wX(s.lngE)-wX(s.lngW));
-  var totalD=Math.abs(wZ(s.latS)-wZ(s.latN));
-  var bw=Math.max(0.3, totalW/s.cols*0.88);
-  var bd=Math.max(0.3, totalD/rows*0.88);
-  return{w:bw,d:bd};
-}
-
-// ── SCENE SETUP ────────────────────────────────────────────────
+// ── SCENE ─────────────────────────────────────────────────────
 var W=window.innerWidth, H=window.innerHeight;
 var renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(W,H);
@@ -290,146 +250,142 @@ document.body.appendChild(renderer.domElement);
 
 var scene=new THREE.Scene();
 scene.background=new THREE.Color(0x060c18);
-scene.fog=new THREE.Fog(0x060c18,65,120);
+scene.fog=new THREE.Fog(0x060c18,70,120);
 
 var camera=new THREE.PerspectiveCamera(44,W/H,0.1,200);
-camera.position.set(0,22,32);
-camera.lookAt(new THREE.Vector3(0,2,0));
+camera.position.set(0,28,38);
+camera.lookAt(new THREE.Vector3(0,0,0));
 
-var amb=new THREE.AmbientLight(0x223366,3.0); scene.add(amb);
-var sun=new THREE.DirectionalLight(0xfff4e0,2.0); sun.position.set(10,25,8); sun.castShadow=true; scene.add(sun);
-var fill=new THREE.DirectionalLight(0x0044aa,0.8); fill.position.set(-10,5,-8); scene.add(fill);
-var top2=new THREE.DirectionalLight(0x00ffcc,0.4); top2.position.set(0,15,-12); scene.add(top2);
+var amb=new THREE.AmbientLight(0x223366,3.2); scene.add(amb);
+var sun=new THREE.DirectionalLight(0xfff4e0,2.0); sun.position.set(8,22,6); sun.castShadow=true; scene.add(sun);
+var fill=new THREE.DirectionalLight(0x0044bb,0.8); fill.position.set(-8,5,-6); scene.add(fill);
 
-// Floor
-var fm=new THREE.Mesh(new THREE.BoxGeometry(WORLD*1.15,0.4,WORLD*0.92),
-  new THREE.MeshStandardMaterial({color:0x090f1e,roughness:0.95}));
-fm.position.set(0,-0.2,0); fm.receiveShadow=true; scene.add(fm);
-var gh=new THREE.GridHelper(WORLD*1.1,26,0x1a3a5a,0x0e1f30); gh.position.y=0.02; scene.add(gh);
+// ── PARK BASE ─────────────────────────────────────────────────
+// Dark ground
+var base=new THREE.Mesh(
+  new THREE.BoxGeometry(PW+1.5, 0.3, PH_A+PH_B+2.0),
+  new THREE.MeshStandardMaterial({color:0x080f1a,roughness:0.95})
+);
+base.position.set(0,-0.16,0); base.receiveShadow=true; scene.add(base);
 
-// Zone separator line
-var sepGeo=new THREE.BufferGeometry();
-var midLng=(rawMinLng+rawMaxLng)/2;
-var sepX=wX(midLng);
-sepGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array([sepX,-0.1,-14, sepX,-0.1,14]),3));
-scene.add(new THREE.LineSegments(sepGeo,new THREE.LineBasicMaterial({color:0x334455,transparent:true,opacity:0.5})));
+// Park boundary outline (white frame)
+function addLine(pts,col,op){
+  var geo=new THREE.BufferGeometry();
+  var arr=[];
+  for(var i=0;i<pts.length;i++){arr.push(pts[i][0],pts[i][1],pts[i][2]);}
+  geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(arr),3));
+  scene.add(new THREE.LineLoop(geo,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op})));
+}
+var bx=PW/2+0.3, bzN=-(PH_A+0.3), bzS=PH_B+0.3;
+addLine([[-bx,0.05,bzN],[bx,0.05,bzN],[bx,0.05,bzS],[-bx,0.05,bzS]],0x336688,0.7);
 
-// Zone labels
-function makeZoneLabel(text,x,z){
-  var cv=document.createElement('canvas'); cv.width=180; cv.height=50;
+// Zone divider road (main road between A & B)
+var rdGeo=new THREE.PlaneGeometry(PW+0.6,ROAD_GAP);
+var rdMat=new THREE.MeshStandardMaterial({color:0x1a2a1a,roughness:0.9});
+var rd=new THREE.Mesh(rdGeo,rdMat); rd.rotation.x=-Math.PI/2; rd.position.set(0,0.01,0); scene.add(rd);
+
+// Internal column roads for each zone
+function addColRoad(x,z1,z2){
+  var rg=new THREE.PlaneGeometry(0.35,Math.abs(z2-z1));
+  var rm=new THREE.MeshStandardMaterial({color:0x111a11,roughness:0.9});
+  var rm2=new THREE.Mesh(rg,rm); rm2.rotation.x=-Math.PI/2;
+  rm2.position.set(x,0.02,(z1+z2)/2); scene.add(rm2);
+}
+// Add roads between Zone A columns
+for(var c=1;c<COLS_A;c++){
+  var rx=-PW/2+c*(lotWA+0.4)-0.2;
+  addColRoad(rx,-(PH_A+0.1),-ROAD_GAP/2);
+}
+for(var c=1;c<COLS_B;c++){
+  var rx=-PW/2+c*(lotWB+0.4)-0.2;
+  addColRoad(rx,ROAD_GAP/2,PH_B+0.1);
+}
+
+// Zone labels on ground
+function groundLabel(text,x,z,col){
+  var cv=document.createElement('canvas'); cv.width=256; cv.height=64;
   var ctx=cv.getContext('2d');
-  ctx.fillStyle='rgba(0,0,0,0)';
-  ctx.fillRect(0,0,180,50);
-  ctx.fillStyle='#4ecdc466';
-  ctx.font='bold 22px monospace';
-  ctx.textAlign='center';
-  ctx.fillText(text,90,32);
+  ctx.fillStyle='rgba(0,0,0,0)'; ctx.fillRect(0,0,256,64);
+  ctx.font='bold 28px monospace'; ctx.fillStyle=col; ctx.textAlign='center';
+  ctx.fillText(text,128,42);
   var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false}));
-  sp.scale.set(3.5,0.9,1);
-  sp.position.set(x,0.3,z);
+  sp.scale.set(6,1.5,1);
+  sp.position.set(x,0.1,z);
   scene.add(sp);
 }
-makeZoneLabel('ZONE A',wX((SECT.AN.lngW+SECT.AN.lngE)/2),-13.5);
-makeZoneLabel('ZONE B',wX((SECT.BN.lngW+SECT.BN.lngE)/2),-13.5);
+groundLabel('ZONE A — NORTH BLOCK (73 LOTS)',-1,-PH_A+1,'#00cc8888');
+groundLabel('ZONE B — SOUTH BLOCK (94 LOTS)',-1,PH_B-1,'#4477ff88');
 
-// ── BUILD LOT BOXES ────────────────────────────────────────────
-var lotMeshes=[], lotMats=[], lotData=[];
-var sectBoxSizes={AN:boxSize('AN'),AS:boxSize('AS'),BN:boxSize('BN'),BS:boxSize('BS')};
+// ── LOT BOXES ────────────────────────────────────────────────
+var lotMeshes=[], lotMats=[], currentFlood=1.06;
+var CA=new THREE.Color(0x00cc88), CB=new THREE.Color(0x4477ff);
+var CF=new THREE.Color(0xff2200), CR=new THREE.Color(0xffaa00);
 
-var COL_A=new THREE.Color(0x00cc88);
-var COL_B=new THREE.Color(0x3366ff);
-var COL_FLOOD=new THREE.Color(0xff2200);
-var COL_RISK=new THREE.Color(0xffaa00);
-
-for(var i=0;i<LOTS.length;i++){
-  var d=LOTS[i];
-  var sk=getSect(d.no);
-  var bs=sectBoxSizes[sk];
-  var x=wX(d.lng), z=wZ(d.lat), h=wY(d.alt);
-  var baseCol=(d.no.charAt(0)==='A')?COL_A:COL_B;
+for(var i=0;i<ALL_LOTS.length;i++){
+  var d=ALL_LOTS[i];
+  var h=wY(d.alt);
+  var lw=(d.zone==='A')?lotWA*0.86:lotWB*0.86;
+  var ld=(d.zone==='A')?lotDA*0.86:lotDB*0.86;
+  var baseC=(d.zone==='A')?CA:CB;
 
   var mat=new THREE.MeshStandardMaterial({
-    color:baseCol.clone(),
-    emissive:baseCol.clone(),
-    emissiveIntensity:0.18,
-    roughness:0.45,
-    metalness:0.2
+    color:baseC.clone(),emissive:baseC.clone(),
+    emissiveIntensity:0.15,roughness:0.45,metalness:0.2
   });
-  var geo=new THREE.BoxGeometry(bs.w*0.88, h, bs.d*0.88);
+  var geo=new THREE.BoxGeometry(lw,h,ld);
   var mesh=new THREE.Mesh(geo,mat);
-  mesh.position.set(x, h/2, z);
-  mesh.castShadow=true;
-  mesh.receiveShadow=true;
+  mesh.position.set(d.x,h/2,d.z);
+  mesh.castShadow=true; mesh.receiveShadow=true;
   mesh.userData=d;
   scene.add(mesh);
-  lotMeshes.push(mesh);
-  lotMats.push(mat);
-  lotData.push(d);
+  lotMeshes.push(mesh); lotMats.push(mat);
 
-  // Top glow cap
-  var capMat=new THREE.MeshStandardMaterial({color:baseCol.clone(),emissive:baseCol.clone(),emissiveIntensity:0.6,roughness:0.1});
-  var cap=new THREE.Mesh(new THREE.BoxGeometry(bs.w*0.88,0.06,bs.d*0.88),capMat);
-  cap.position.set(x,h+0.03,z);
-  scene.add(cap);
+  // Top glow
+  var tmat=new THREE.MeshStandardMaterial({color:baseC.clone(),emissive:baseC.clone(),emissiveIntensity:0.5,roughness:0.1});
+  var tcap=new THREE.Mesh(new THREE.BoxGeometry(lw,0.05,ld),tmat);
+  tcap.position.set(d.x,h+0.025,d.z); scene.add(tcap);
 }
 
-// ── FLOOD WATER PLANE ─────────────────────────────────────────
-var waterMat=new THREE.MeshStandardMaterial({
-  color:0x0055dd,transparent:true,opacity:0.42,
-  roughness:0.05,metalness:0.1,side:THREE.DoubleSide
-});
-waterMat.emissive=new THREE.Color(0x002299);
-waterMat.emissiveIntensity=0.3;
-var waterMesh=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*1.1,WORLD*0.88),waterMat);
-waterMesh.rotation.x=-Math.PI/2;
-waterMesh.position.set(0,wY(1.06),0);
-waterMesh.visible=false;
-scene.add(waterMesh);
+// ── FLOOD WATER ───────────────────────────────────────────────
+var wMat=new THREE.MeshStandardMaterial({color:0x0055dd,transparent:true,opacity:0.42,roughness:0.05,side:THREE.DoubleSide});
+wMat.emissive=new THREE.Color(0x002299); wMat.emissiveIntensity=0.3;
+var wMesh=new THREE.Mesh(new THREE.PlaneGeometry(PW+0.8,PH_A+PH_B+0.8),wMat);
+wMesh.rotation.x=-Math.PI/2; wMesh.position.set(0,wY(1.06),0); wMesh.visible=false; scene.add(wMesh);
 
-// ── FLOOD SLIDER ──────────────────────────────────────────────
-var currentFlood=1.06;
-var slider=document.getElementById('flood-slider');
-var fdisplay=document.getElementById('flood-display');
-var fbadge=document.getElementById('flood-badge');
-var ftags=document.getElementById('flooded-tags');
+// ── FLOOD SLIDER ─────────────────────────────────────────────
+var sl=document.getElementById('fslider');
+var fd=document.getElementById('fdisplay');
+var fb=document.getElementById('fbadge');
+var ft=document.getElementById('ftags');
 
-function updateFlood(val){
-  currentFlood=val/100;
-  fdisplay.innerHTML=currentFlood.toFixed(2)+' <span class="unit">m</span>';
-  waterMesh.visible=(currentFlood>1.06);
-  waterMesh.position.y=wY(currentFlood);
-
+function updateFlood(v){
+  currentFlood=v/100;
+  fd.innerHTML=currentFlood.toFixed(2)+' <span class="u">m</span>';
+  wMesh.visible=(currentFlood>1.06);
+  wMesh.position.y=wY(currentFlood);
   var flooded=[];
-  for(var i=0;i<LOTS.length;i++){
-    var d=LOTS[i];
-    var isA=(d.no.charAt(0)==='A');
-    var baseCol=isA?COL_A:COL_B;
-    var alt=d.alt;
-    if(alt<=currentFlood){
+  for(var i=0;i<ALL_LOTS.length;i++){
+    var d=ALL_LOTS[i]; var isA=(d.zone==='A');
+    var bc=isA?CA:CB;
+    if(d.alt<=currentFlood){
       flooded.push(d.no);
-      lotMats[i].color.copy(COL_FLOOD);
-      lotMats[i].emissive.copy(COL_FLOOD);
-      lotMats[i].emissiveIntensity=1.8;
-    } else if(alt<=currentFlood+0.10){
-      lotMats[i].color.copy(COL_RISK);
-      lotMats[i].emissive.copy(COL_RISK);
-      lotMats[i].emissiveIntensity=0.8;
+      lotMats[i].color.copy(CF); lotMats[i].emissive.copy(CF); lotMats[i].emissiveIntensity=1.8;
+    } else if(d.alt<=currentFlood+0.10){
+      lotMats[i].color.copy(CR); lotMats[i].emissive.copy(CR); lotMats[i].emissiveIntensity=0.8;
     } else {
-      lotMats[i].color.copy(baseCol);
-      lotMats[i].emissive.copy(baseCol);
-      lotMats[i].emissiveIntensity=0.18;
+      lotMats[i].color.copy(bc); lotMats[i].emissive.copy(bc); lotMats[i].emissiveIntensity=0.15;
     }
   }
-  fbadge.textContent=flooded.length+' lot'+(flooded.length!==1?'s':'')+' flooded';
-  fbadge.className=flooded.length>0?'danger':'';
-  ftags.innerHTML=flooded.slice(0,20).map(function(n){return '<div class="ftag">⚠ '+n+'</div>';}).join('')+(flooded.length>20?'<div class="ftag">+more</div>':'');
+  fb.textContent=flooded.length+' lot'+(flooded.length!==1?'s':'')+' flooded';
+  fb.className=flooded.length>0?'danger':'';
+  ft.innerHTML=flooded.slice(0,24).map(function(n){return'<div class="ftag">⚠ '+n+'</div>';}).join('')+(flooded.length>24?'<div class="ftag">+more</div>':'');
 }
-slider.addEventListener('input',function(e){updateFlood(parseInt(e.target.value));});
+sl.addEventListener('input',function(e){updateFlood(parseInt(e.target.value));});
 
 // ── ORBIT CONTROLS ────────────────────────────────────────────
 var drag=false,rDrag=false,prev={x:0,y:0};
-var sph={theta:-0.15,phi:0.52,r:48};
-var tgt=new THREE.Vector3(0,2,0);
+var sph={theta:0,phi:0.50,r:52};
+var tgt=new THREE.Vector3(0,1,0);
 function updCam(){
   var phi=Math.max(0.1,Math.min(1.3,sph.phi));
   camera.position.set(
@@ -455,34 +411,27 @@ el.addEventListener('mousemove',function(e){
   }
   doHover(e);
 });
-el.addEventListener('wheel',function(e){sph.r=Math.max(12,Math.min(80,sph.r+e.deltaY*0.04));updCam();},{passive:true});
+el.addEventListener('wheel',function(e){sph.r=Math.max(12,Math.min(90,sph.r+e.deltaY*0.04));updCam();},{passive:true});
 
-// ── HOVER TOOLTIP ─────────────────────────────────────────────
-var tt=document.getElementById('tooltip');
-var ray=new THREE.Raycaster(), m2=new THREE.Vector2();
-var hov=null;
+// ── TOOLTIP ───────────────────────────────────────────────────
+var ttEl=document.getElementById('tooltip');
+var ray=new THREE.Raycaster(), m2=new THREE.Vector2(), hov=null;
 function doHover(e){
   var rect=el.getBoundingClientRect();
   m2.x=((e.clientX-rect.left)/rect.width)*2-1;
   m2.y=-((e.clientY-rect.top)/rect.height)*2+1;
   ray.setFromCamera(m2,camera);
   var hits=ray.intersectObjects(lotMeshes);
-  if(hov){hov.material.emissiveIntensity=0.18;hov.scale.set(1,1,1);hov=null;}
+  if(hov){hov.material.emissiveIntensity=0.15;hov.scale.set(1,1,1);hov=null;}
   if(hits.length>0){
-    var mesh=hits[0].object;
-    mesh.material.emissiveIntensity=1.5;
-    mesh.scale.set(1.08,1,1.08);
-    hov=mesh;
+    var mesh=hits[0].object; mesh.material.emissiveIntensity=1.5; mesh.scale.set(1.08,1,1.08); hov=mesh;
     var d=mesh.userData;
-    var flooded=(d.alt<=currentFlood);
-    var atrisk=(d.alt<=currentFlood+0.10&&!flooded);
+    var flooded=(d.alt<=currentFlood), atrisk=(!flooded&&d.alt<=currentFlood+0.10);
     document.getElementById('tt-id').textContent='LOT '+d.no+' · '+d.tn;
-    document.getElementById('tt-info').innerHTML='Zone: '+(d.no.charAt(0)==='A'?'A (North)':'B (South)')+'<br>Altitude: '+d.alt+'m<br>Section: '+getSect(d.no);
-    document.getElementById('tt-status').innerHTML=flooded?'<span style="color:#ff6644">🔴 FLOODED AT THIS LEVEL</span>':atrisk?'<span style="color:#ffaa00">🟡 AT RISK — within 0.1m</span>':'<span style="color:#00cc88">✅ SAFE AT THIS LEVEL</span>';
-    tt.style.display='block';
-    tt.style.left=(e.clientX+14)+'px';
-    tt.style.top=(e.clientY-16)+'px';
-  } else { tt.style.display='none'; }
+    document.getElementById('tt-info').innerHTML='Zone: '+(d.zone==='A'?'A — NORTH BLOCK':'B — SOUTH BLOCK')+'<br>Altitude: '+d.alt+'m<br>Flood margin: '+(d.alt-currentFlood>0?'+'+(d.alt-currentFlood).toFixed(2)+'m':'BELOW LEVEL');
+    document.getElementById('tt-st').innerHTML=flooded?'<span style="color:#ff6644">🔴 FLOODED</span>':atrisk?'<span style="color:#ffaa00">🟡 AT RISK</span>':'<span style="color:#00cc88">✅ SAFE</span>';
+    ttEl.style.display='block'; ttEl.style.left=(e.clientX+14)+'px'; ttEl.style.top=(e.clientY-16)+'px';
+  } else { ttEl.style.display='none'; }
 }
 
 // ── ANIMATE ───────────────────────────────────────────────────
@@ -490,11 +439,8 @@ var t0=0;
 function animate(){
   requestAnimationFrame(animate);
   t0+=0.012;
-  if(!drag&&!rDrag){sph.theta+=0.0006;updCam();}
-  if(waterMesh.visible){
-    waterMat.opacity=0.36+0.10*Math.sin(t0*1.1);
-    waterMesh.position.y=wY(currentFlood)+0.06*Math.sin(t0*0.8);
-  }
+  if(!drag&&!rDrag){sph.theta+=0.0005;updCam();}
+  if(wMesh.visible){wMat.opacity=0.36+0.09*Math.sin(t0*1.1);wMesh.position.y=wY(currentFlood)+0.05*Math.sin(t0*0.8);}
   renderer.render(scene,camera);
 }
 animate();
